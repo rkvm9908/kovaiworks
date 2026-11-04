@@ -1,16 +1,45 @@
-# kovaiworks
+# KovaiWorks - Velaiku Aalu Ready
 
-A new Flutter project.
+Real-time hyperlocal gig platform connecting Coimbatore mills, factories
+and event organisers with daily wage workers.
 
-## Getting Started
+**Live demo:** <your .web.app URL>
+**Demo logins (test numbers):** Worker 9999900001, Employer 9999900002, OTP 123456
 
-This project is a starting point for a Flutter application.
+## Features
+- Phone OTP login, role-based flow (Worker / Employer)
+- Tamil and English (runtime toggle)
+- Industrial and Event job categories
+- Worker availability toggle and live location (realtime)
+- Employer map of available workers (OpenStreetMap)
+- Job requests with live accept / reject
+- Live worker tracking
+- Real-time chat (Firestore)
+- Simulated UPI payment, PDF bill, rating
 
-A few resources to get you started if this is your first Flutter project:
+## Tech stack
+Flutter, Riverpod, go_router, Firebase Auth, Cloud Firestore,
+flutter_map (OpenStreetMap), geolocator, pdf/printing, intl (l10n)
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+## Architecture
+Feature-first folders (`features/auth`, `owner`, `worker`, `chat`,
+`payment`, `settings`), shared widgets and core theme/router.
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Design decisions
+- Zero-cost stack: OpenStreetMap instead of Google Maps, Firestore
+  listeners instead of Cloud Functions
+- Firestore security rules protect `role` and `verified` fields
+
+## Known limitations (honest)
+- Aadhaar: only last 4 digits stored, verified badge is manual (real
+  eKYC needs a licensed provider)
+- Payment is simulated; Razorpay needs a key and a server for signature
+  verification and worker payouts
+- No background push (FCM needs a server / Blaze plan)
+- `users` documents are readable by any signed-in user (needed for map);
+  production would split a public profile collection
+- Location writes throttled (50 m) to stay within the free quota
+
+## Future scope
+Razorpay + RazorpayX payouts, FCM push, Cloud Functions, admin panel
+for verification, geohash queries for scale.
