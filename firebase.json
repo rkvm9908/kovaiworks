@@ -1,0 +1,36 @@
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "kovaiworks",
+          "appId": "1:249984031665:android:969be8ca37c2377b773b90",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "kovaiworks",
+          "configurations": {
+            "android": "1:249984031665:android:969be8ca37c2377b773b90",
+            "web": "1:249984031665:web:9f8da593be1d1686773b90"
+          }
+        }
+      }
+    }
+  },
+  "hosting": {
+    "public": "build/web",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
+  }
+}

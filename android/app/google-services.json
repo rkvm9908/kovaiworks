@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "249984031665",
+    "project_id": "kovaiworks",
+    "storage_bucket": "kovaiworks.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:249984031665:android:969be8ca37c2377b773b90",
+        "android_client_info": {
+          "package_name": "com.kovaiworks.kovaiworks"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCwjLtLae_c1l7xTBDdZhb7Rbhf8dYfZmU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
