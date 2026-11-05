@@ -3,8 +3,15 @@
 Real-time hyperlocal gig platform connecting Coimbatore mills, factories
 and event organisers with daily wage workers.
 
-**Live demo:** <your .web.app URL>
-**Demo logins (test numbers):** Worker 9999900001, Employer 9999900002, OTP 123456
+**Live demo:** https://kovaiworks.web.app
+
+**Demo logins (test numbers):** 
+
+Worker 9999900001,
+
+Employer 9999900002, 
+
+OTP 123456
 
 ## Features
 - Phone OTP login, role-based flow (Worker / Employer)
