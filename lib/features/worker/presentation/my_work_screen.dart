@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../../../core/constants/skills.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../l10n/app_localizations.dart';
@@ -26,7 +27,13 @@ class MyWorkScreen extends StatelessWidget {
             subtitle: t.appName,
             leading: IconButton(
               icon: const Icon(Icons.arrow_back, color: Colors.white),
-              onPressed: () => Navigator.of(context).maybePop(),
+              onPressed: () {
+                if (context.canPop()) {
+                  context.pop();
+                } else {
+                  context.go('/worker-home');
+                }
+              },
             ),
           ),
           Expanded(
@@ -40,11 +47,12 @@ class MyWorkScreen extends StatelessWidget {
                 if (!snap.hasData) {
                   return const Center(child: CircularProgressIndicator());
                 }
-                final docs = snap.data!.docs
-                    .where((d) =>
-                        d.data()['status'] == 'accepted' ||
-                        d.data()['status'] == 'completed')
-                    .toList();
+                final docs = snap.data!.docs.where((d) {
+                  final s = d.data()['status'];
+                  return s == 'accepted' ||
+                      s == 'completed' ||
+                      (s == 'pending' && d.data()['initiatedBy'] == 'worker');
+                }).toList();
                 if (docs.isEmpty) {
                   return EmptyState(
                       icon: Icons.work_history, message: t.noWork);
@@ -56,7 +64,9 @@ class MyWorkScreen extends StatelessWidget {
                     final r = docs[i].data();
                     final skill =
                         allSkills.firstWhere((s) => s.id == r['skillId']);
-                    final done = r['status'] == 'completed';
+                    final status = r['status'] as String;
+                    final done = status == 'completed';
+                    final pending = status == 'pending';
                     return FadeSlide(
                       index: i,
                       child: ClassicCard(
@@ -87,8 +97,15 @@ class MyWorkScreen extends StatelessWidget {
                             const SizedBox(height: 14),
                             StatusTimeline(
                               steps: [t.stepRequested, t.accepted, t.paid],
-                              current: done ? 2 : 1,
+                              current: done ? 2 : (pending ? 0 : 1),
                             ),
+                            if (pending) ...[
+                              const SizedBox(height: 8),
+                              Text(t.awaitingOwner,
+                                  style: const TextStyle(
+                                      color: AppColors.grey600,
+                                      fontSize: 12)),
+                            ],
                             if (r['rating'] != null) ...[
                               const SizedBox(height: 10),
                               Row(children: [
@@ -105,26 +122,28 @@ class MyWorkScreen extends StatelessWidget {
                                 ),
                               ]),
                             ],
-                            const SizedBox(height: 12),
-                            Wrap(spacing: 8, runSpacing: 8, children: [
-                              OutlinedButton.icon(
-                                icon: const Icon(Icons.chat, size: 18),
-                                label: Text(t.chat),
-                                onPressed: () => Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (_) => ChatScreen(
-                                            requestId: docs[i].id))),
-                              ),
-                              if (done)
+                            if (!pending) ...[
+                              const SizedBox(height: 12),
+                              Wrap(spacing: 8, runSpacing: 8, children: [
                                 OutlinedButton.icon(
-                                  icon: const Icon(Icons.receipt_long,
-                                      size: 18),
-                                  label: Text(t.bill),
-                                  onPressed: () =>
-                                      BillService.show(docs[i].id, r),
+                                  icon: const Icon(Icons.chat, size: 18),
+                                  label: Text(t.chat),
+                                  onPressed: () => Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (_) => ChatScreen(
+                                              requestId: docs[i].id))),
                                 ),
-                            ]),
+                                if (done)
+                                  OutlinedButton.icon(
+                                    icon: const Icon(Icons.receipt_long,
+                                        size: 18),
+                                    label: Text(t.bill),
+                                    onPressed: () =>
+                                        BillService.show(docs[i].id, r),
+                                  ),
+                              ]),
+                            ],
                           ],
                         ),
                       ),

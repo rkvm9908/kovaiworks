@@ -225,7 +225,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noWorkersNearby => 'No workers are currently available nearby. Please check again later.';
 
   @override
-  String get distanceKm => 'km away';
+  String get distanceKm => 'away';
 
   @override
   String get sendRequest => 'Send Job Request';
@@ -463,4 +463,64 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get jobDetails => 'Job Details';
+
+  @override
+  String get apply => 'Apply';
+
+  @override
+  String get applied => 'Applied';
+
+  @override
+  String get applySent => 'Application sent';
+
+  @override
+  String get notifApplied => 'New application';
+
+  @override
+  String get awaitingOwner => 'Waiting for employer';
+
+  @override
+  String get workerApplied => 'Worker applied';
+
+  @override
+  String get filled => 'Filled';
+
+  @override
+  String get slotsLeft => 'slots left';
+
+  @override
+  String get jobFilled => 'All positions filled';
+
+  @override
+  String get reopen => 'Reopen job';
+
+  @override
+  String get hiredCount => 'hired';
+
+  @override
+  String get pickLocation => 'Pick job location';
+
+  @override
+  String get tapToPin => 'Tap on the map to drop a pin';
+
+  @override
+  String get useMyLocation => 'Use my location';
+
+  @override
+  String get confirmLocation => 'Confirm location';
+
+  @override
+  String get locationPicked => 'Location pinned';
+
+  @override
+  String get pinLocation => 'Pin exact location';
+
+  @override
+  String get jobsMap => 'Jobs Near You';
+
+  @override
+  String get jobsOnMap => 'View Jobs on Map';
+
+  @override
+  String get noJobsMap => 'There are currently no job opportunities available on the map. Please check again later.';
 }

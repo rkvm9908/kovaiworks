@@ -225,7 +225,7 @@ class AppLocalizationsTa extends AppLocalizations {
   String get noWorkersNearby => 'அருகிலுள்ள பகுதியில் தற்போது தொழிலாளர்கள் கிடைக்கவில்லை. தயவுசெய்து பின்னர் முயற்சிக்கவும்.';
 
   @override
-  String get distanceKm => 'கி.மீ. தொலைவில்';
+  String get distanceKm => 'தொலைவில்';
 
   @override
   String get sendRequest => 'வேலைக்கான கோரிக்கையை அனுப்பவும்';
@@ -463,4 +463,64 @@ class AppLocalizationsTa extends AppLocalizations {
 
   @override
   String get jobDetails => 'வேலை விவரங்கள்';
+
+  @override
+  String get apply => 'விண்ணப்பி';
+
+  @override
+  String get applied => 'விண்ணப்பித்தாச்சு';
+
+  @override
+  String get applySent => 'விண்ணப்பம் அனுப்பப்பட்டது';
+
+  @override
+  String get notifApplied => 'புதிய விண்ணப்பம்';
+
+  @override
+  String get awaitingOwner => 'முதலாளி பதிலுக்காக காத்திருக்கிறது';
+
+  @override
+  String get workerApplied => 'ஆள் விண்ணப்பித்துள்ளார்';
+
+  @override
+  String get filled => 'நிரம்பியது';
+
+  @override
+  String get slotsLeft => 'இடங்கள் மீதம்';
+
+  @override
+  String get jobFilled => 'எல்லா இடங்களும் நிரம்பியது';
+
+  @override
+  String get reopen => 'மீண்டும் திற';
+
+  @override
+  String get hiredCount => 'எடுக்கப்பட்டவர்';
+
+  @override
+  String get pickLocation => 'வேலை இடத்தைத் தேர்வு செய்';
+
+  @override
+  String get tapToPin => 'வரைபடத்தில் தட்டி பின் போடுங்கள்';
+
+  @override
+  String get useMyLocation => 'என் இருப்பிடம்';
+
+  @override
+  String get confirmLocation => 'இடத்தை உறுதி செய்';
+
+  @override
+  String get locationPicked => 'இடம் குறிக்கப்பட்டது';
+
+  @override
+  String get pinLocation => 'சரியான இடத்தைக் குறி';
+
+  @override
+  String get jobsMap => 'உங்களுக்கு அருகிலுள்ள வேலைவாய்ப்புகள்';
+
+  @override
+  String get jobsOnMap => 'வரைபடத்தில் உள்ள வேலைவாய்ப்புகளைக் காண்க';
+
+  @override
+  String get noJobsMap => 'தற்போது வரைபடத்தில் வேலைவாய்ப்புகள் எதுவும் இல்லை. சிறிது நேரம் கழித்து மீண்டும் முயற்சிக்கவும்.';
 }

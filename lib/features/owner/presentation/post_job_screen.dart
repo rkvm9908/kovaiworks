@@ -6,6 +6,8 @@ import '../../../core/constants/skills.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/widgets/classic_widgets.dart';
+import 'package:latlong2/latlong.dart';
+import 'location_picker_screen.dart';
 
 class PostJobScreen extends StatefulWidget {
   const PostJobScreen({super.key});
@@ -22,6 +24,7 @@ class _PostJobScreenState extends State<PostJobScreen> {
   int _workers = 1;
   String _area = kovaiAreas.first;
   String _eventType = 'Wedding';
+  LatLng? _loc;
   DateTime? _eventDate;
   bool _saving = false;
 
@@ -53,11 +56,13 @@ class _PostJobScreenState extends State<PostJobScreen> {
       await FirebaseFirestore.instance.collection('jobs').add({
         'ownerId': uid,
         'businessName': owner.data()?['businessName'] ?? '',
+        'ownerPhone': owner.data()?['phone'] ?? '',
         'category': _category.name,
         'skillId': _skillId,
         'workersNeeded': _workers,
         'wagePerDay': _wage,
         'area': _area,
+        if (_loc != null) 'location': GeoPoint(_loc!.latitude, _loc!.longitude),
         if (_category == JobCategory.event) ...{
           'eventType': _eventType,
           'eventDate': Timestamp.fromDate(_eventDate!),
@@ -241,6 +246,30 @@ class _PostJobScreenState extends State<PostJobScreen> {
                                         value: a, child: Text(a)))
                                     .toList(),
                                 onChanged: (v) => setState(() => _area = v!),
+                              ),
+                                                            const SizedBox(height: 14),
+                              OutlinedButton.icon(
+                                style: OutlinedButton.styleFrom(
+                                    minimumSize: const Size.fromHeight(48)),
+                                icon: Icon(
+                                    _loc == null
+                                        ? Icons.add_location_alt_outlined
+                                        : Icons.check_circle,
+                                    color: _loc == null
+                                        ? null
+                                        : AppColors.success),
+                                label: Text(_loc == null
+                                    ? t.pinLocation
+                                    : t.locationPicked),
+                                onPressed: () async {
+                                  final r = await Navigator.push<LatLng>(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (_) =>
+                                            LocationPickerScreen(initial: _loc)),
+                                  );
+                                  if (r != null) setState(() => _loc = r);
+                                },
                               ),
                             ],
                           ),

@@ -530,7 +530,7 @@ abstract class AppLocalizations {
   /// No description provided for @distanceKm.
   ///
   /// In en, this message translates to:
-  /// **'km away'**
+  /// **'away'**
   String get distanceKm;
 
   /// No description provided for @sendRequest.
@@ -1006,6 +1006,126 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Job Details'**
   String get jobDetails;
+
+  /// No description provided for @apply.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply'**
+  String get apply;
+
+  /// No description provided for @applied.
+  ///
+  /// In en, this message translates to:
+  /// **'Applied'**
+  String get applied;
+
+  /// No description provided for @applySent.
+  ///
+  /// In en, this message translates to:
+  /// **'Application sent'**
+  String get applySent;
+
+  /// No description provided for @notifApplied.
+  ///
+  /// In en, this message translates to:
+  /// **'New application'**
+  String get notifApplied;
+
+  /// No description provided for @awaitingOwner.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for employer'**
+  String get awaitingOwner;
+
+  /// No description provided for @workerApplied.
+  ///
+  /// In en, this message translates to:
+  /// **'Worker applied'**
+  String get workerApplied;
+
+  /// No description provided for @filled.
+  ///
+  /// In en, this message translates to:
+  /// **'Filled'**
+  String get filled;
+
+  /// No description provided for @slotsLeft.
+  ///
+  /// In en, this message translates to:
+  /// **'slots left'**
+  String get slotsLeft;
+
+  /// No description provided for @jobFilled.
+  ///
+  /// In en, this message translates to:
+  /// **'All positions filled'**
+  String get jobFilled;
+
+  /// No description provided for @reopen.
+  ///
+  /// In en, this message translates to:
+  /// **'Reopen job'**
+  String get reopen;
+
+  /// No description provided for @hiredCount.
+  ///
+  /// In en, this message translates to:
+  /// **'hired'**
+  String get hiredCount;
+
+  /// No description provided for @pickLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick job location'**
+  String get pickLocation;
+
+  /// No description provided for @tapToPin.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap on the map to drop a pin'**
+  String get tapToPin;
+
+  /// No description provided for @useMyLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Use my location'**
+  String get useMyLocation;
+
+  /// No description provided for @confirmLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm location'**
+  String get confirmLocation;
+
+  /// No description provided for @locationPicked.
+  ///
+  /// In en, this message translates to:
+  /// **'Location pinned'**
+  String get locationPicked;
+
+  /// No description provided for @pinLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Pin exact location'**
+  String get pinLocation;
+
+  /// No description provided for @jobsMap.
+  ///
+  /// In en, this message translates to:
+  /// **'Jobs Near You'**
+  String get jobsMap;
+
+  /// No description provided for @jobsOnMap.
+  ///
+  /// In en, this message translates to:
+  /// **'View Jobs on Map'**
+  String get jobsOnMap;
+
+  /// No description provided for @noJobsMap.
+  ///
+  /// In en, this message translates to:
+  /// **'There are currently no job opportunities available on the map. Please check again later.'**
+  String get noJobsMap;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

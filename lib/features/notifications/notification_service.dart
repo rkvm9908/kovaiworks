@@ -9,6 +9,8 @@ import '../../l10n/app_localizations.dart';
 
 String notifTitle(AppLocalizations t, String type) {
   switch (type) {
+    case 'applied':
+      return t.notifApplied;
     case 'request':
       return t.notifRequest;
     case 'accepted':
@@ -144,7 +146,7 @@ class _NotifBellState extends State<NotifBell> {
       action: SnackBarAction(
         label: t.view,
         textColor: AppColors.orange,
-        onPressed: () => context.push('/notifications'),
+        onPressed: () => GoRouter.of(context).push('/notifications'),
       ),
     ));
   }

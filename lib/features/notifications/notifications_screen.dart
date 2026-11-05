@@ -7,6 +7,7 @@ import '../../l10n/app_localizations.dart';
 import '../../shared/widgets/app_widgets.dart';
 import '../../shared/widgets/empty_state.dart';
 import 'notification_service.dart';
+import 'package:go_router/go_router.dart';
 
 class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen({super.key});
@@ -25,6 +26,20 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     super.dispose();
   }
 
+  Future<void> _open(String type) async {
+    final doc = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(_uid)
+        .get();
+    final isWorker = doc.data()?['role'] == 'worker';
+    if (!mounted) return;
+    if (isWorker) {
+      context.push(type == 'request' ? '/worker-home' : '/my-work');
+    } else {
+      context.push('/requests');
+    }
+  }
+  
   Future<void> _markRead() async {
     final db = FirebaseFirestore.instance;
     final q = await db
@@ -52,7 +67,13 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             actions: [
               IconButton(
                 icon: const Icon(Icons.arrow_back, color: Colors.white),
-                onPressed: () => Navigator.of(context).maybePop(),
+                onPressed: () {
+                    if (context.canPop()) {
+                      context.pop();
+                    } else {
+                      context.go('/');
+                    }
+                  },
               ),
             ],
           ),
@@ -97,6 +118,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                                 : AppColors.grey200),
                       ),
                       child: ListTile(
+                        onTap: () => _open(type),
                         leading: CircleAvatar(
                           backgroundColor: notifColor(type).withOpacity(0.12),
                           child: Icon(notifIcon(type), color: notifColor(type)),

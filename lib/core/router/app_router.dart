@@ -16,6 +16,7 @@ import '../../features/owner/presentation/requests_screen.dart';
 import '../../features/owner/presentation/owner_profile_screen.dart';
 import '../../features/settings/presentation/settings_screen.dart';
 import '../../features/notifications/notifications_screen.dart';
+import '../../features/worker/presentation/jobs_map_screen.dart';
 
 const _protected = [
   '/worker-home',
@@ -27,6 +28,7 @@ const _protected = [
   '/profile',
   '/owner-profile',
   '/notifications',
+  '/jobs-map',
 ];
 
 final appRouter = GoRouter(
@@ -57,5 +59,6 @@ final appRouter = GoRouter(
     GoRoute(path: '/profile', builder: (_, __) => const WorkerProfileScreen()),
     GoRoute(path: '/owner-profile', builder: (_, __) => const OwnerProfileScreen()),
     GoRoute(path: '/notifications', builder: (_, __) => const NotificationsScreen()),
+    GoRoute(path: '/jobs-map', builder: (_, __) => const JobsMapScreen()),
   ],
 );

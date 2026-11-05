@@ -11,10 +11,24 @@ import '../../../shared/widgets/empty_state.dart';
 import '../../chat/presentation/chat_screen.dart';
 import '../../notifications/notification_service.dart';
 import '../../payment/bill_service.dart';
+import '../../jobs/job_service.dart';
+import 'package:go_router/go_router.dart';
 
 class RequestsScreen extends StatelessWidget {
   const RequestsScreen({super.key});
 
+  Future<void> _decide(DocumentReference<Map<String, dynamic>> ref,
+      Map<String, dynamic> r, String status) async {
+    await ref.update({'status': status});
+    await NotificationService.send(
+      toUid: r['workerId'],
+      type: status,
+      body: '${r['businessName']}',
+    );
+    if (status == 'accepted') {
+      await JobService.checkFilled(r['jobId'], r['ownerId']);
+    }
+  }
   Future<void> _completeAndPay(
       BuildContext context,
       DocumentReference<Map<String, dynamic>> ref,
@@ -108,7 +122,13 @@ class RequestsScreen extends StatelessWidget {
             subtitle: t.appName,
             leading: IconButton(
               icon: const Icon(Icons.arrow_back, color: Colors.white),
-              onPressed: () => Navigator.of(context).maybePop(),
+              onPressed: () {
+                if (context.canPop()) {
+                  context.pop();
+                } else {
+                  context.go('/owner-home'); 
+                }
+              },
             ),
           ),
           Expanded(
@@ -122,7 +142,9 @@ class RequestsScreen extends StatelessWidget {
                 if (!snap.hasData) {
                   return const Center(child: CircularProgressIndicator());
                 }
-                final docs = snap.data!.docs;
+                final docs = snap.data!.docs
+                    .where((d) => d.data()['initiatedBy'] == 'worker')
+                    .toList();
                 if (docs.isEmpty) {
                   return EmptyState(icon: Icons.inbox, message: t.noRequests);
                 }
@@ -184,6 +206,7 @@ class RequestsScreen extends StatelessWidget {
                                 steps: [t.stepRequested, t.accepted, t.paid],
                                 current: step,
                               ),
+                              
                             if (r['rating'] != null) ...[
                               const SizedBox(height: 10),
                               Row(
@@ -197,6 +220,38 @@ class RequestsScreen extends StatelessWidget {
                                       size: 18),
                                 ),
                               ),
+                            ],
+                            if (status == 'pending' &&
+                                r['initiatedBy'] == 'worker') ...[
+                              const SizedBox(height: 12),
+                              Row(children: [
+                                const Icon(Icons.person_add_alt_1,
+                                    size: 18, color: AppColors.orange),
+                                const SizedBox(width: 6),
+                                Text(t.workerApplied,
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.w600)),
+                              ]),
+                              const SizedBox(height: 8),
+                              Row(children: [
+                                Expanded(
+                                  child: OutlinedButton(
+                                    onPressed: () => _decide(
+                                        docs[i].reference, r, 'rejected'),
+                                    child: Text(t.reject),
+                                  ),
+                                ),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: FilledButton(
+                                    style: FilledButton.styleFrom(
+                                        backgroundColor: AppColors.success),
+                                    onPressed: () => _decide(
+                                        docs[i].reference, r, 'accepted'),
+                                    child: Text(t.accept),
+                                  ),
+                                ),
+                              ]),
                             ],
                             if (status == 'accepted' ||
                                 status == 'completed') ...[

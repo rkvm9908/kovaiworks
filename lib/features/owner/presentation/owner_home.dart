@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -7,10 +8,42 @@ import '../../../core/theme/app_colors.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/widgets/classic_widgets.dart';
 import '../../../shared/widgets/empty_state.dart';
+import '../../jobs/job_service.dart';
 import '../../notifications/notification_service.dart';
 
-class OwnerHome extends StatelessWidget {
+class OwnerHome extends StatefulWidget {
   const OwnerHome({super.key});
+
+  @override
+  State<OwnerHome> createState() => _OwnerHomeState();
+}
+
+class _OwnerHomeState extends State<OwnerHome> {
+  StreamSubscription? _sub;
+
+  @override
+  void initState() {
+    super.initState();
+    final uid = FirebaseAuth.instance.currentUser!.uid;
+    // Accepted aagura ethuvum, job full-ah nu check pannum
+    _sub = FirebaseFirestore.instance
+        .collection('requests')
+        .where('ownerId', isEqualTo: uid)
+        .where('status', isEqualTo: 'accepted')
+        .snapshots()
+        .listen((snap) {
+      final jobIds = snap.docs.map((d) => d.data()['jobId'] as String).toSet();
+      for (final id in jobIds) {
+        JobService.checkFilled(id, uid);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _sub?.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -78,33 +111,63 @@ class OwnerHome extends StatelessWidget {
                             icon: Icons.work_off, message: t.emptyJobs),
                       );
                     }
-                    return Column(
-                      children: docs.asMap().entries.map((e) {
-                        final j = e.value.data();
-                        final skill =
-                            allSkills.firstWhere((s) => s.id == j['skillId']);
-                        return ClassicJobCard(
-                          index: e.key + 1,
-                          isEvent: j['category'] == 'event',
-                          title: lang == 'ta' ? skill.ta : skill.en,
-                          business: '',
-                          area: '${j['area']}',
-                          wage: (j['wagePerDay'] as num).toInt(),
-                          wageLabel: t.perDay,
-                          workersText:
-                              '${j['workersNeeded']} ${t.workersLabel}',
-                          footer: Align(
-                            alignment: Alignment.centerRight,
-                            child: TextButton.icon(
-                              icon: const Icon(Icons.delete_outline,
-                                  color: AppColors.danger, size: 18),
-                              label: const Text('Delete',
-                                  style: TextStyle(color: AppColors.danger)),
-                              onPressed: () => e.value.reference.delete(),
-                            ),
-                          ),
+                    return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+                      stream: FirebaseFirestore.instance
+                          .collection('requests')
+                          .where('ownerId', isEqualTo: uid)
+                          .snapshots(),
+                      builder: (context, rs) {
+                        final reqs = rs.data?.docs ?? [];
+                        int hired(String jobId) => reqs.where((d) {
+                              final x = d.data();
+                              return x['jobId'] == jobId &&
+                                  (x['status'] == 'accepted' ||
+                                      x['status'] == 'completed');
+                            }).length;
+
+                        return Column(
+                          children: docs.asMap().entries.map((e) {
+                            final j = e.value.data();
+                            final skill = allSkills
+                                .firstWhere((s) => s.id == j['skillId']);
+                            final need = (j['workersNeeded'] as num).toInt();
+                            final h = hired(e.value.id);
+                            final filled = j['status'] == 'filled';
+                            return ClassicJobCard(
+                              index: e.key + 1,
+                              isEvent: j['category'] == 'event',
+                              title: lang == 'ta' ? skill.ta : skill.en,
+                              business: filled ? '🔒 ${t.filled}' : '',
+                              area: '${j['area']}',
+                              wage: (j['wagePerDay'] as num).toInt(),
+                              wageLabel: t.perDay,
+                              workersText: '$h/$need ${t.hiredCount}',
+                              footer: Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  if (filled)
+                                    TextButton.icon(
+                                      icon: const Icon(Icons.lock_open,
+                                          size: 18),
+                                      label: Text(t.reopen),
+                                      onPressed: () => e.value.reference
+                                          .update({'status': 'open'}),
+                                    ),
+                                  TextButton.icon(
+                                    icon: const Icon(Icons.delete_outline,
+                                        color: AppColors.danger, size: 18),
+                                    label: const Text('Delete',
+                                        style: TextStyle(
+                                            color: AppColors.danger)),
+                                    onPressed: () =>
+                                        e.value.reference.delete(),
+                                  ),
+                                ],
+                              ),
+                            );
+                          }).toList(),
                         );
-                      }).toList(),
+                      },
                     );
                   },
                 ),

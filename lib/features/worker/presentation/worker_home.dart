@@ -44,19 +44,36 @@ class _WorkerHomeState extends State<WorkerHome> {
     if (mounted) setState(() => _sharing = v);
   }
 
-  Future<void> _respond(
-      QueryDocumentSnapshot<Map<String, dynamic>> d, String status) async {
-    final r = d.data();
+  Future<void> _apply(
+      QueryDocumentSnapshot<Map<String, dynamic>> jobDoc) async {
+    final t = AppLocalizations.of(context)!;
     final uid = FirebaseAuth.instance.currentUser!.uid;
-    await d.reference.update({'status': status});
-    final me =
-        (await FirebaseFirestore.instance.collection('users').doc(uid).get())
-            .data();
+    final j = jobDoc.data();
+    final db = FirebaseFirestore.instance;
+
+    final me = (await db.collection('users').doc(uid).get()).data();
+
+    await db.collection('requests').add({
+      'jobId': jobDoc.id,
+      'ownerId': j['ownerId'],
+      'workerId': uid,
+      'businessName': j['businessName'] ?? '',
+      'skillId': j['skillId'],
+      'wagePerDay': j['wagePerDay'],
+      'area': j['area'],
+      'status': 'pending',
+      'initiatedBy': 'worker',
+      'createdAt': FieldValue.serverTimestamp(),
+    });
     await NotificationService.send(
-      toUid: r['ownerId'],
-      type: status,
-      body: '${me?['name'] ?? ''}',
+      toUid: j['ownerId'],
+      type: 'applied',
+      body: '${me?['name'] ?? ''} • ${j['area']}',
     );
+    if (mounted) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(t.applySent)));
+    }
   }
 
   @override
@@ -77,6 +94,9 @@ class _WorkerHomeState extends State<WorkerHome> {
               IconButton(
                   icon: const Icon(Icons.account_circle, color: Colors.white),
                   onPressed: () => context.push('/profile')),
+              IconButton(
+                  icon: const Icon(Icons.map, color: Colors.white),
+                  onPressed: () => context.push('/jobs-map')),
               IconButton(
                   icon: const Icon(Icons.work_history, color: Colors.white),
                   onPressed: () => context.push('/my-work')),
@@ -196,103 +216,77 @@ class _WorkerHomeState extends State<WorkerHome> {
                 ),
                 const SizedBox(height: 6),
 
-                // Requests
-                StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-                  stream: FirebaseFirestore.instance
-                      .collection('requests')
-                      .where('workerId', isEqualTo: uid)
-                      .where('status', isEqualTo: 'pending')
-                      .snapshots(),
-                  builder: (context, snap) {
-                    if (snap.hasError) return Text('${snap.error}');
-                    final docs = snap.data?.docs ?? [];
-                    if (docs.isEmpty) return const SizedBox.shrink();
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        SectionTitle(
-                            t.jobRequests, Icons.notifications_active),
-                        ...docs.asMap().entries.map((e) {
-                          final d = e.value;
-                          final r = d.data();
-                          final skill = allSkills
-                              .firstWhere((s) => s.id == r['skillId']);
-                          return ClassicJobCard(
-                            index: e.key + 2,
-                            isEvent: skill.category == JobCategory.event,
-                            title: lang == 'ta' ? skill.ta : skill.en,
-                            business: '${r['businessName']}',
-                            area: '${r['area']}',
-                            wage: (r['wagePerDay'] as num).toInt(),
-                            wageLabel: t.perDay,
-                            workersText: t.jobRequests,
-                            footer: Row(children: [
-                              Expanded(
-                                child: OutlinedButton(
-                                  style: OutlinedButton.styleFrom(
-                                      minimumSize: const Size.fromHeight(46)),
-                                  onPressed: () => _respond(d, 'rejected'),
-                                  child: Text(t.reject),
-                                ),
-                              ),
-                              const SizedBox(width: 10),
-                              Expanded(
-                                child: FilledButton(
-                                  style: FilledButton.styleFrom(
-                                      backgroundColor: AppColors.success),
-                                  onPressed: () => _respond(d, 'accepted'),
-                                  child: Text(t.accept),
-                                ),
-                              ),
-                            ]),
-                          );
-                        }),
-                        const SizedBox(height: 6),
-                      ],
-                    );
-                  },
-                ),
-
                 // Open jobs
                 SectionTitle(t.openJobs, Icons.work_outline),
                 StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
                   stream: FirebaseFirestore.instance
-                      .collection('jobs')
-                      .where('status', isEqualTo: 'open')
+                      .collection('requests')
+                      .where('workerId', isEqualTo: uid)
                       .snapshots(),
-                  builder: (context, snap) {
-                    if (snap.hasError) return Text('${snap.error}');
-                    if (!snap.hasData) {
-                      return const Padding(
-                        padding: EdgeInsets.all(24),
-                        child: Center(child: CircularProgressIndicator()),
-                      );
-                    }
-                    final docs = snap.data!.docs;
-                    if (docs.isEmpty) {
-                      return SizedBox(
-                        height: 260,
-                        child: EmptyState(
-                            icon: Icons.work_off, message: t.emptyJobs),
-                      );
-                    }
-                    return Column(
-                      children: docs.asMap().entries.map((e) {
-                        final j = e.value.data();
-                        final skill =
-                            allSkills.firstWhere((s) => s.id == j['skillId']);
-                        return ClassicJobCard(
-                          index: e.key + 3,
-                          isEvent: j['category'] == 'event',
-                          title: lang == 'ta' ? skill.ta : skill.en,
-                          business: '${j['businessName']}',
-                          area: '${j['area']}',
-                          wage: (j['wagePerDay'] as num).toInt(),
-                          wageLabel: t.perDay,
-                          workersText:
-                              '${j['workersNeeded']} ${t.workersLabel}',
+                  builder: (context, reqSnap) {
+                    final appliedJobs = (reqSnap.data?.docs ?? [])
+                        .map((d) => d.data()['jobId'])
+                        .toSet();
+                    return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+                      stream: FirebaseFirestore.instance
+                          .collection('jobs')
+                          .where('status', isEqualTo: 'open')
+                          .snapshots(),
+                      builder: (context, snap) {
+                        if (snap.hasError) return Text('${snap.error}');
+                        if (!snap.hasData) {
+                          return const Padding(
+                            padding: EdgeInsets.all(24),
+                            child: Center(child: CircularProgressIndicator()),
+                          );
+                        }
+                        final docs = snap.data!.docs;
+                        if (docs.isEmpty) {
+                          return SizedBox(
+                            height: 260,
+                            child: EmptyState(
+                                icon: Icons.work_off, message: t.emptyJobs),
+                          );
+                        }
+                        return Column(
+                          children: docs.asMap().entries.map((e) {
+                            final jd = e.value;
+                            final j = jd.data();
+                            final skill = allSkills
+                                .firstWhere((s) => s.id == j['skillId']);
+                            final applied = appliedJobs.contains(jd.id);
+                            return ClassicJobCard(
+                              index: e.key + 3,
+                              isEvent: j['category'] == 'event',
+                              title: lang == 'ta' ? skill.ta : skill.en,
+                              business:
+                                  '${j['businessName']}  •  📞 ${j['ownerPhone'] ?? ''}',
+                              area: '${j['area']}',
+                              wage: (j['wagePerDay'] as num).toInt(),
+                              wageLabel: t.perDay,
+                              workersText:
+                                  '${j['workersNeeded']} ${t.workersLabel}',
+                              footer: applied
+                                  ? OutlinedButton.icon(
+                                      style: OutlinedButton.styleFrom(
+                                          minimumSize:
+                                              const Size.fromHeight(44)),
+                                      onPressed: null,
+                                      icon: const Icon(Icons.check, size: 18),
+                                      label: Text(t.applied),
+                                    )
+                                  : FilledButton.icon(
+                                      style: FilledButton.styleFrom(
+                                          minimumSize:
+                                              const Size.fromHeight(44)),
+                                      onPressed: () => _apply(jd),
+                                      icon: const Icon(Icons.send, size: 18),
+                                      label: Text(t.apply),
+                                    ),
+                            );
+                          }).toList(),
                         );
-                      }).toList(),
+                      },
                     );
                   },
                 ),
