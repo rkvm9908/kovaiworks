@@ -1,7 +1,7 @@
 # KovaiWorks - Velaiku Aalu Ready
 
 Real-time hyperlocal gig platform connecting Coimbatore mills, factories
-and event organisers with daily wage workers.
+and event organizers with daily wage workers.
 
 **Live demo:** https://kovaiworks.web.app
 
