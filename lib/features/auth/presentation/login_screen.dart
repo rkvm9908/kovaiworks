@@ -48,6 +48,112 @@ class _LoginScreenState extends State<LoginScreen> {
     });
   }
 
+  // ---------- Login mudinja apram route ----------
+  Future<void> _goHome(String role) async {
+    final uid = FirebaseAuth.instance.currentUser!.uid;
+    final doc =
+        await FirebaseFirestore.instance.collection('users').doc(uid).get();
+    final done = doc.data()?['profileDone'] == true;
+    if (!mounted) return;
+    if (role == 'worker') {
+      context.go(done ? '/worker-home' : '/worker-setup');
+    } else {
+      context.go(done ? '/owner-home' : '/owner-setup');
+    }
+  }
+
+  // ---------- Mobile number pop-up (Google users-ku) ----------
+  Future<void> _askPhoneIfMissing() async {
+    final uid = FirebaseAuth.instance.currentUser!.uid;
+    final ref = FirebaseFirestore.instance.collection('users').doc(uid);
+    final phone = ((await ref.get()).data()?['phone'] ?? '').toString();
+    if (phone.isNotEmpty || !mounted) return;
+
+    final t = AppLocalizations.of(context)!;
+    final ctrl = TextEditingController();
+    String? err;
+
+    await showDialog<void>(
+      context: context,
+      barrierDismissible: false, // close panna mudiyaadhu
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setS) => PopScope(
+          canPop: false,
+          child: AlertDialog(
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20)),
+            title: Text(t.enterMobileTitle),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(t.enterMobileDesc,
+                    style: const TextStyle(color: AppColors.grey600)),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: ctrl,
+                  autofocus: true,
+                  keyboardType: TextInputType.phone,
+                  maxLength: 10,
+                  decoration: InputDecoration(
+                    labelText: t.phoneLabel,
+                    prefixText: '+91  ',
+                    counterText: '',
+                    errorText: err,
+                  ),
+                ),
+              ],
+            ),
+            actions: [
+              FilledButton(
+                style: FilledButton.styleFrom(
+                    backgroundColor: _color,
+                    minimumSize: const Size.fromHeight(48)),
+                onPressed: () async {
+                  final v = ctrl.text.trim();
+                  if (!RegExp(r'^[6-9]\d{9}$').hasMatch(v)) {
+                    setS(() => err = t.invalidPhone);
+                    return;
+                  }
+                  await ref.update({'phone': '+91$v'});
+                  if (ctx.mounted) Navigator.pop(ctx);
+                },
+                child: Text(t.saveNumber),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ---------- Google ----------
+  Future<void> _google() async {
+    final t = AppLocalizations.of(context)!;
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+    try {
+      final role = await _repo.signInWithGoogle(widget.role);
+      await _askPhoneIfMissing();
+      await _goHome(role);
+    } on FirebaseAuthException catch (e) {
+      debugPrint('GOOGLE ERROR: ${e.code} | ${e.message}');
+      if (e.code != 'popup-closed-by-user' &&
+          e.code != 'cancelled-popup-request' &&
+          e.code != 'canceled') {
+        setState(() => _error = '${e.code}');
+      }
+    } catch (e) {
+      debugPrint('GOOGLE ERROR: $e');
+      setState(() => _error = '$e');
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  // ---------- Phone OTP ----------
   Future<void> _sendOtp() async {
     final t = AppLocalizations.of(context)!;
     final phone = _phoneCtrl.text.trim();
@@ -83,16 +189,7 @@ class _LoginScreenState extends State<LoginScreen> {
     });
     try {
       final role = await _repo.verifyOtp(_confirmation!, code, widget.role);
-      final uid = FirebaseAuth.instance.currentUser!.uid;
-      final doc =
-          await FirebaseFirestore.instance.collection('users').doc(uid).get();
-      final done = doc.data()?['profileDone'] == true;
-      if (!mounted) return;
-      if (role == 'worker') {
-        context.go(done ? '/worker-home' : '/worker-setup');
-      } else {
-        context.go(done ? '/owner-home' : '/owner-setup');
-      }
+      await _goHome(role);
     } on FirebaseAuthException catch (e) {
       _otpCtrl.clear();
       setState(() => _error = e.code == 'invalid-verification-code'
@@ -143,12 +240,13 @@ class _LoginScreenState extends State<LoginScreen> {
               children: [
                 IconButton(
                   icon: const Icon(Icons.arrow_back, color: Colors.white),
-                  onPressed: () =>
-                      otpStep ? setState(() {
-                        _confirmation = null;
-                        _otpCtrl.clear();
-                        _error = null;
-                      }) : context.go('/'),
+                  onPressed: () => otpStep
+                      ? setState(() {
+                          _confirmation = null;
+                          _otpCtrl.clear();
+                          _error = null;
+                        })
+                      : context.go('/'),
                 ),
                 Padding(
                   padding: const EdgeInsets.only(left: 12),
@@ -257,8 +355,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               autofocus: true,
                               defaultPinTheme: pin,
                               focusedPinTheme: pin.copyDecorationWith(
-                                  border:
-                                      Border.all(color: _color, width: 2)),
+                                  border: Border.all(color: _color, width: 2)),
                               onCompleted: (_) => _verify(),
                             ),
                           ),
@@ -300,6 +397,32 @@ class _LoginScreenState extends State<LoginScreen> {
                                 : TextButton(
                                     onPressed: _loading ? null : _sendOtp,
                                     child: Text(t.resend)),
+                          ),
+                        ],
+
+                        // ---------- Google option ----------
+                        if (!otpStep) ...[
+                          const SizedBox(height: 18),
+                          Row(children: [
+                            const Expanded(child: Divider()),
+                            Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 12),
+                              child: Text(t.orLabel,
+                                  style: const TextStyle(
+                                      color: AppColors.grey600)),
+                            ),
+                            const Expanded(child: Divider()),
+                          ]),
+                          const SizedBox(height: 18),
+                          OutlinedButton.icon(
+                            style: OutlinedButton.styleFrom(
+                                minimumSize: const Size.fromHeight(52),
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(14))),
+                            onPressed: _loading ? null : _google,
+                            icon: const Icon(Icons.g_mobiledata, size: 30),
+                            label: Text(t.continueGoogle),
                           ),
                         ],
                       ],

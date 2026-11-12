@@ -1126,6 +1126,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'There are currently no job opportunities available on the map. Please check again later.'**
   String get noJobsMap;
+
+  /// No description provided for @continueGoogle.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue with Google'**
+  String get continueGoogle;
+
+  /// No description provided for @orLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'or'**
+  String get orLabel;
+
+  /// No description provided for @enterMobileTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add your mobile number'**
+  String get enterMobileTitle;
+
+  /// No description provided for @enterMobileDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Employers and workers contact each other on this number.'**
+  String get enterMobileDesc;
+
+  /// No description provided for @saveNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Save number'**
+  String get saveNumber;
+
+  /// No description provided for @googleFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Google sign-in failed, try again'**
+  String get googleFailed;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

@@ -523,4 +523,22 @@ class AppLocalizationsTa extends AppLocalizations {
 
   @override
   String get noJobsMap => 'தற்போது வரைபடத்தில் வேலைவாய்ப்புகள் எதுவும் இல்லை. சிறிது நேரம் கழித்து மீண்டும் முயற்சிக்கவும்.';
+
+  @override
+  String get continueGoogle => 'Google மூலம் தொடரவும்';
+
+  @override
+  String get orLabel => 'அல்லது';
+
+  @override
+  String get enterMobileTitle => 'உங்கள் மொபைல் எண்ணை சேர்க்கவும்';
+
+  @override
+  String get enterMobileDesc => 'முதலாளியும் தொழிலாளியும் இந்த எண்ணில் தொடர்பு கொள்வார்கள்.';
+
+  @override
+  String get saveNumber => 'எண்ணை சேமி';
+
+  @override
+  String get googleFailed => 'Google உள்நுழைவு தோல்வி, மீண்டும் முயற்சிக்கவும்';
 }

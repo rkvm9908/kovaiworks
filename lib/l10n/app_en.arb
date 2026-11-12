@@ -175,5 +175,11 @@
   "jobsMap": "Jobs Near You",
   "jobsOnMap": "View Jobs on Map",
   "noJobsMap": "There are currently no job opportunities available on the map. Please check again later.",
-  "distanceKm": "away"
+  "distanceKm": "away",
+  "continueGoogle": "Continue with Google",
+  "orLabel": "or",
+  "enterMobileTitle": "Add your mobile number",
+  "enterMobileDesc": "Employers and workers contact each other on this number.",
+  "saveNumber": "Save number",
+  "googleFailed": "Google sign-in failed, try again"
 }

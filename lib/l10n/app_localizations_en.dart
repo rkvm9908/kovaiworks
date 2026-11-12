@@ -523,4 +523,22 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get noJobsMap => 'There are currently no job opportunities available on the map. Please check again later.';
+
+  @override
+  String get continueGoogle => 'Continue with Google';
+
+  @override
+  String get orLabel => 'or';
+
+  @override
+  String get enterMobileTitle => 'Add your mobile number';
+
+  @override
+  String get enterMobileDesc => 'Employers and workers contact each other on this number.';
+
+  @override
+  String get saveNumber => 'Save number';
+
+  @override
+  String get googleFailed => 'Google sign-in failed, try again';
 }
