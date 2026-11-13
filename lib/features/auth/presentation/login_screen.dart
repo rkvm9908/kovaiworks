@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -48,7 +49,6 @@ class _LoginScreenState extends State<LoginScreen> {
     });
   }
 
-  // ---------- Login mudinja apram route ----------
   Future<void> _goHome(String role) async {
     final uid = FirebaseAuth.instance.currentUser!.uid;
     final doc =
@@ -62,7 +62,6 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  // ---------- Mobile number pop-up (Google users-ku) ----------
   Future<void> _askPhoneIfMissing() async {
     final uid = FirebaseAuth.instance.currentUser!.uid;
     final ref = FirebaseFirestore.instance.collection('users').doc(uid);
@@ -75,7 +74,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
     await showDialog<void>(
       context: context,
-      barrierDismissible: false, // close panna mudiyaadhu
+      barrierDismissible: false,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setS) => PopScope(
           canPop: false,
@@ -127,9 +126,7 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  // ---------- Google ----------
   Future<void> _google() async {
-    final t = AppLocalizations.of(context)!;
     setState(() {
       _loading = true;
       _error = null;
@@ -143,7 +140,7 @@ class _LoginScreenState extends State<LoginScreen> {
       if (e.code != 'popup-closed-by-user' &&
           e.code != 'cancelled-popup-request' &&
           e.code != 'canceled') {
-        setState(() => _error = '${e.code}');
+        setState(() => _error = e.code);
       }
     } catch (e) {
       debugPrint('GOOGLE ERROR: $e');
@@ -153,7 +150,6 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  // ---------- Phone OTP ----------
   Future<void> _sendOtp() async {
     final t = AppLocalizations.of(context)!;
     final phone = _phoneCtrl.text.trim();
@@ -222,7 +218,6 @@ class _LoginScreenState extends State<LoginScreen> {
     return Scaffold(
       body: Column(
         children: [
-          // Gradient header
           Container(
             width: double.infinity,
             padding: EdgeInsets.fromLTRB(
@@ -278,8 +273,6 @@ class _LoginScreenState extends State<LoginScreen> {
               ],
             ),
           ),
-
-          // Form card
           Expanded(
             child: Center(
               child: SingleChildScrollView(
@@ -325,19 +318,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             decoration: InputDecoration(
                               labelText: t.phoneLabel,
                               counterText: '',
-                              prefixIcon: const Padding(
-                                padding: EdgeInsets.symmetric(horizontal: 14),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Text('🇮🇳', style: TextStyle(fontSize: 18)),
-                                    SizedBox(width: 6),
-                                    Text('+91',
-                                        style: TextStyle(
-                                            fontWeight: FontWeight.w700)),
-                                  ],
-                                ),
-                              ),
+                              prefixText: '+91  ',
                             ),
                           ),
                           const SizedBox(height: 8),
@@ -399,8 +380,6 @@ class _LoginScreenState extends State<LoginScreen> {
                                     child: Text(t.resend)),
                           ),
                         ],
-
-                        // ---------- Google option ----------
                         if (!otpStep) ...[
                           const SizedBox(height: 18),
                           Row(children: [
@@ -415,13 +394,23 @@ class _LoginScreenState extends State<LoginScreen> {
                             const Expanded(child: Divider()),
                           ]),
                           const SizedBox(height: 18),
-                          OutlinedButton.icon(
-                            style: OutlinedButton.styleFrom(
-                                minimumSize: const Size.fromHeight(52),
-                                shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(14))),
+                          FilledButton.icon(
+                            style: FilledButton.styleFrom(
+                              backgroundColor: _color,
+                              foregroundColor: Colors.white,
+                              minimumSize: const Size.fromHeight(52),
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(14)),
+                            ),
                             onPressed: _loading ? null : _google,
-                            icon: const Icon(Icons.g_mobiledata, size: 30),
+                            icon: Container(
+                              padding: const EdgeInsets.all(4),
+                              decoration: const BoxDecoration(
+                                color: Colors.white,
+                                shape: BoxShape.circle,
+                              ),
+                              child: const _GoogleLogo(size: 18),
+                            ),
                             label: Text(t.continueGoogle),
                           ),
                         ],
@@ -436,4 +425,50 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
     );
   }
+}
+
+class _GoogleLogo extends StatelessWidget {
+  final double size;
+  const _GoogleLogo({this.size = 22});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: size,
+      height: size,
+      child: CustomPaint(painter: _GoogleLogoPainter()),
+    );
+  }
+}
+
+class _GoogleLogoPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size s) {
+    final stroke = s.width * 0.2;
+    final rect = Rect.fromLTWH(
+        stroke / 2, stroke / 2, s.width - stroke, s.height - stroke);
+
+    Paint arc(Color c) => Paint()
+      ..color = c
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = stroke
+      ..strokeCap = StrokeCap.butt;
+
+    canvas.drawArc(rect, 0, math.pi * 0.5, false, arc(const Color(0xFF4285F4)));
+    canvas.drawArc(
+        rect, math.pi * 0.5, math.pi * 0.5, false, arc(const Color(0xFF34A853)));
+    canvas.drawArc(
+        rect, math.pi, math.pi * 0.5, false, arc(const Color(0xFFFBBC05)));
+    canvas.drawArc(
+        rect, math.pi * 1.5, math.pi * 0.4, false, arc(const Color(0xFFEA4335)));
+
+    final bar = Paint()..color = const Color(0xFF4285F4);
+    canvas.drawRect(
+        Rect.fromLTWH(
+            s.width * 0.5, s.height * 0.42, s.width * 0.45, stroke * 0.95),
+        bar);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter old) => false;
 }

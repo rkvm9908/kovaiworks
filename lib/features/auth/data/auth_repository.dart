@@ -37,7 +37,20 @@ class AuthRepository {
     final user = cred.user!;
     final ref = _db.collection('users').doc(user.uid);
     final snap = await ref.get();
-    if (snap.exists) return snap.data()!['role'] as String;
+
+    if (snap.exists) {
+      final d = snap.data()!;
+      final updates = <String, dynamic>{};
+      if ((d['email'] ?? '').toString().isEmpty && user.email != null) {
+        updates['email'] = user.email;
+      }
+      if ((d['name'] ?? '').toString().isEmpty &&
+          (user.displayName ?? '').isNotEmpty) {
+        updates['name'] = user.displayName;
+      }
+      if (updates.isNotEmpty) await ref.update(updates);
+      return d['role'] as String;
+    }
 
     await ref.set({
       'role': selectedRole,
